@@ -1,0 +1,194 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// Structure for Feedback
+typedef struct Feedback {
+    int studentID;
+    char courseCode[20];
+    int rating;
+    char comments[100];
+    struct Feedback *next;
+} Feedback;
+
+// Function to create new feedback node
+Feedback* createFeedback(int studentID, char courseCode[], int rating, char comments[]) {
+    Feedback* newNode = (Feedback*)malloc(sizeof(Feedback));
+    newNode->studentID = studentID;
+    strcpy(newNode->courseCode, courseCode);
+    newNode->rating = rating;
+    strcpy(newNode->comments, comments);
+    newNode->next = NULL;
+    return newNode;
+}
+
+// Function to add feedback dynamically at end
+void addFeedback(Feedback **head, int studentID, char courseCode[], int rating, char comments[]) {
+    Feedback *newNode = createFeedback(studentID, courseCode, rating, comments);
+    if (*head == NULL) {
+        *head = newNode;
+    } else {
+        Feedback *temp = *head;
+        while (temp->next != NULL)
+            temp = temp->next;
+        temp->next = newNode;
+    }
+}
+
+// Function to search feedback by course
+void searchByCourse(Feedback *head, char courseCode[]) {
+    int found = 0;
+    while (head != NULL) {
+        if (strcmp(head->courseCode, courseCode) == 0) {
+            printf("Student ID: %d | Rating: %d | Comment: %s\n",
+                   head->studentID, head->rating, head->comments);
+            found = 1;
+        }
+        head = head->next;
+    }
+    if (!found) printf("No feedback found for course %s\n", courseCode);
+}
+
+// Function to search feedback by student
+void searchByStudent(Feedback *head, int studentID) {
+    int found = 0;
+    while (head != NULL) {
+        if (head->studentID == studentID) {
+            printf("Course: %s | Rating: %d | Comment: %s\n",
+                   head->courseCode, head->rating, head->comments);
+            found = 1;
+        }
+        head = head->next;
+    }
+    if (!found) printf("No feedback found for student %d\n", studentID);
+}
+
+// Function to calculate average rating per course
+void averageByCourse(Feedback *head, char courseCode[]) {
+    int total = 0, count = 0;
+    while (head != NULL) {
+        if (strcmp(head->courseCode, courseCode) == 0) {
+            total += head->rating;
+            count++;
+        }
+        head = head->next;
+    }
+    if (count > 0)
+        printf("Average rating for %s: %.2f\n", courseCode, (float)total / count);
+    else
+        printf("No feedback for course %s\n", courseCode);
+}
+
+// Function to reverse display feedback
+void reverseDisplay(Feedback *head) {
+    if (head == NULL) return;
+    reverseDisplay(head->next);
+    printf("Student ID: %d | Course: %s | Rating: %d | Comment: %s\n",
+           head->studentID, head->courseCode, head->rating, head->comments);
+}
+
+// Function to clone linked list
+Feedback* cloneList(Feedback *head) {
+    if (head == NULL) return NULL;
+    Feedback *cloneHead = NULL, *cloneTail = NULL;
+    while (head != NULL) {
+        Feedback *newNode = createFeedback(head->studentID, head->courseCode, head->rating, head->comments);
+        if (cloneHead == NULL) {
+            cloneHead = newNode;
+            cloneTail = newNode;
+        } else {
+            cloneTail->next = newNode;
+            cloneTail = newNode;
+        }
+        head = head->next;
+    }
+    return cloneHead;
+}
+
+// Function to display feedbacks
+void displayFeedbacks(Feedback *head) {
+    if (head == NULL) {
+        printf("No feedback available.\n");
+        return;
+    }
+    while (head != NULL) {
+        printf("Student ID: %d | Course: %s | Rating: %d | Comment: %s\n",
+               head->studentID, head->courseCode, head->rating, head->comments);
+        head = head->next;
+    }
+}
+
+// Main program
+int main() {
+    Feedback *feedbackList = NULL;
+    Feedback *clonedList = NULL;
+    int choice, studentID, rating;
+    char courseCode[20], comments[100];
+
+    while (1) {
+        printf("\n--- Student Feedback System ---\n");
+        printf("1. Add Feedback\n");
+        printf("2. Search by Course\n");
+        printf("3. Search by Student\n");
+        printf("4. Average Rating by Course\n");
+        printf("5. Display Feedbacks in Reverse\n");
+        printf("6. Clone Feedback Data\n");
+        printf("7. Display All Feedbacks\n");
+        printf("0. Exit\n");
+        printf("Enter choice: ");
+        scanf("%d", &choice);
+        getchar(); // consume newline
+
+        switch (choice) {
+            case 1:
+                printf("Enter Student ID: ");
+                scanf("%d", &studentID);
+                getchar();
+                printf("Enter Course Code: ");
+                fgets(courseCode, sizeof(courseCode), stdin);
+                courseCode[strcspn(courseCode, "\n")] = '\0';
+                printf("Enter Rating (1-5): ");
+                scanf("%d", &rating);
+                getchar();
+                printf("Enter Comments: ");
+                fgets(comments, sizeof(comments), stdin);
+                comments[strcspn(comments, "\n")] = '\0';
+                addFeedback(&feedbackList, studentID, courseCode, rating, comments);
+                break;
+            case 2:
+                printf("Enter Course Code to search: ");
+                fgets(courseCode, sizeof(courseCode), stdin);
+                courseCode[strcspn(courseCode, "\n")] = '\0';
+                searchByCourse(feedbackList, courseCode);
+                break;
+            case 3:
+                printf("Enter Student ID to search: ");
+                scanf("%d", &studentID);
+                searchByStudent(feedbackList, studentID);
+                break;
+            case 4:
+                printf("Enter Course Code: ");
+                getchar();
+                fgets(courseCode, sizeof(courseCode), stdin);
+                courseCode[strcspn(courseCode, "\n")] = '\0';
+                averageByCourse(feedbackList, courseCode);
+                break;
+            case 5:
+                reverseDisplay(feedbackList);
+                break;
+            case 6:
+                clonedList = cloneList(feedbackList);
+                printf("Cloned feedback list created.\n");
+                break;
+            case 7:
+                displayFeedbacks(feedbackList);
+                break;
+            case 0:
+                printf("Exiting...\n");
+                exit(0);
+            default:
+                printf("Invalid choice!\n");
+        }
+    }
+    return 0;
+}
